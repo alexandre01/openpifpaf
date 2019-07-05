@@ -2,3 +2,4 @@ runway-python==0.1.0
 openpifpaf
 numpy
 torch
+torchvision
