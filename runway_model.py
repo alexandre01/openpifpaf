@@ -1,19 +1,18 @@
 import runway
-from runway.data_types import number, text, image
+from runway.data_types import text, image
 
 import argparse
 import glob
 import json
 import logging
-import os
 
 import numpy as np
 import torch
-
 import matplotlib.pyplot as plt
 
 from openpifpaf.network import nets
-from openpifpaf import datasets, decoder, show, transforms
+from openpifpaf import decoder, show, transforms
+import datasets
 
 
 def cli():
@@ -85,6 +84,8 @@ def bbox_from_keypoints(kps):
 
 
 setup_options = {}
+
+
 @runway.setup(options=setup_options)
 def setup(opts):
     args = cli()
@@ -93,20 +94,20 @@ def setup(opts):
     model, _ = nets.factory_from_args(args)
     model = model.to(args.device)
     processor = decoder.factory_from_args(args, model)
-    
+
     return model, processor
 
+
 @runway.command(name='predict',
-                inputs={ 'image': image() },
-                outputs={ 'keypoints': text(),
-                          'image': image()
-                        })
+                inputs={'image': image()},
+                outputs={'keypoints': text(),
+                         'image': image()
+                         })
 def generate(m, inputs):
-    
     args = cli()
     model, processor = m
     image = inputs["image"]
-    
+
     # data
     preprocess = None
     if args.long_edge:
@@ -137,16 +138,16 @@ def generate(m, inputs):
 
     processor.set_cpu_image(image, processed_image_cpu)
     keypoint_sets, scores = processor.keypoint_sets_from_annotations(pred)
-    
+
     kp_json = json.dumps([
-                {
-                    'keypoints': np.around(kps, 1).reshape(-1).tolist(),
-                    'bbox': bbox_from_keypoints(kps),
-                }
-                for kps in keypoint_sets])
+        {
+            'keypoints': np.around(kps, 1).reshape(-1).tolist(),
+            'bbox': bbox_from_keypoints(kps),
+        }
+        for kps in keypoint_sets])
 
     kwargs = {
-            'figsize': (args.figure_width, args.figure_width * image.shape[0] / image.shape[1]),
+        'figsize': (args.figure_width, args.figure_width * image.shape[0] / image.shape[1]),
     }
     fig = plt.figure(**kwargs)
     ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
@@ -156,15 +157,16 @@ def generate(m, inputs):
     fig.add_axes(ax)
     ax.imshow(image)
     skeleton_painter.keypoints(ax, keypoint_sets, scores=scores)
-    
+
     fig.canvas.draw()
     w, h = fig.canvas.get_width_height()
     output_image = np.fromstring(fig.canvas.tostring_rgb(), dtype='uint8').reshape(h, w, 3)
-        
+
     return {
         'keypoints': kp_json,
         'image': output_image
     }
+
 
 if __name__ == '__main__':
     # run the model server using the default network interface and ports,
