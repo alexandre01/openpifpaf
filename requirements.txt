@@ -1,5 +1,5 @@
 runway-python==0.1.0
-openpifpaf
-numpy
-torch
-torchvision
+openpifpaf==0.6.3
+numpy==1.16.3
+torch==1.1.0
+torchvision==0.2.2.post3
