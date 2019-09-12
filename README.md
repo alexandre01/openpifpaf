@@ -1,5 +1,7 @@
 # OpenPifPaf port for RunwayML
 
+[![Model Badge](https://open-app.runwayml.com/gh-badge.svg)](https://open-app.runwayml.com/?model=alexandre01/OpenPifPaf-Pose)
+
 ![](docs/crowd.png)
 
 ![](docs/000000081988.jpg.skeleton.png)
